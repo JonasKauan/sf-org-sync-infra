@@ -1,0 +1,60 @@
+services:
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    networks:
+      - app-network
+
+  backend:
+    image: jonnaskauan/sf-org-hub-sync:latest
+    restart: unless-stopped
+
+    environment:
+      MY_SQL_URL: ${MY_SQL_URL}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      BOOTSTRAP_ENABLED: ${BOOTSTRAP_ENABLED}
+      APP_BOOTSTRAP_NAME: ${APP_BOOTSTRAP_NAME}
+      APP_BOOTSTRAP_USERNAME: ${APP_BOOTSTRAP_USERNAME}
+      APP_BOOTSTRAP_PASSWORD: ${APP_BOOTSTRAP_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME}
+      SFDX_ENCRYPTION_KEY: ${SFDX_ENCRYPTION_KEY}
+      SERVER_PORT: ${SERVER_PORT}
+    depends_on:
+      - mysql
+
+    networks:
+      - app-network
+
+  frontend:
+    image: jonnaskauan/sf-org-manager:latest
+    restart: unless-stopped
+
+    ports:
+      - "8080:80"
+
+    depends_on:
+      - backend
+
+    networks:
+      - app-network
+
+
+volumes:
+  mysql_data:
+
+
+networks:
+  app-network:
+    driver: bridge
