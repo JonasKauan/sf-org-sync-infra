@@ -1,5 +1,52 @@
 services:
 
+  keycloak-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - keycloak_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U keycloak -d keycloak
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  keycloak:
+    image: jonnaskauan/keycloak-sf-org-manager:26.8.1-theme-v1
+    restart: unless-stopped
+    command: start
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+
+      # Usadas para criar o administrador no primeiro boot do banco.
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+
+      # HTTPS termina no Tailscale Serve; Keycloak recebe HTTP local.
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_RELATIVE_PATH: /auth
+      KC_HOSTNAME: https://umbrel.tail15d66b.ts.net:11443/auth
+    ports:
+      # Porta HTTPS sugerida no Tailscale: 11443.
+      - "127.0.0.1:8180:8080"
+    networks:
+      - app-network
+
   mysql:
     image: mysql:8.4
     restart: unless-stopped
@@ -8,56 +55,54 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-
     volumes:
       - mysql_data:/var/lib/mysql
-
     networks:
       - app-network
 
   backend:
     image: jonnaskauan/sf-org-hub-sync:latest
     restart: unless-stopped
-
     environment:
       MY_SQL_URL: ${MY_SQL_URL}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      BOOTSTRAP_ENABLED: ${BOOTSTRAP_ENABLED}
-      APP_BOOTSTRAP_NAME: ${APP_BOOTSTRAP_NAME}
-      APP_BOOTSTRAP_USERNAME: ${APP_BOOTSTRAP_USERNAME}
-      APP_BOOTSTRAP_PASSWORD: ${APP_BOOTSTRAP_PASSWORD}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME}
       SFDX_ENCRYPTION_KEY: ${SFDX_ENCRYPTION_KEY}
       SERVER_PORT: ${SERVER_PORT}
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
+      KEYCLOAK_JWK_SET_URI: ${KEYCLOAK_JWK_SET_URI}
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE}
+      KEYCLOAK_ADMIN_BASE_URL: ${KEYCLOAK_ADMIN_BASE_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID}
+      KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
+      KEYCLOAK_FIRST_ACCESS_CLIENT_ID: ${KEYCLOAK_FIRST_ACCESS_CLIENT_ID}
+      FIRST_ACCESS_REDIRECT_URI: ${FIRST_ACCESS_REDIRECT_URI}
     depends_on:
       - mysql
-
     networks:
       - app-network
 
   frontend:
     image: jonnaskauan/sf-org-manager:latest
     restart: unless-stopped
-
+    environment: 
+      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
+      VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
+      VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
+      VITE_API_PROXY_TARGET: ${VITE_API_PROXY_TARGET}
     ports:
-      - "8080:80"
-      - "443:443"
-      
-    volumes:
-      - 
-
+      # Tailscale Serve (no host Umbrel) acessara este endpoint local.
+      # Porta HTTPS sugerida no Tailscale: 10443.
+      - "127.0.0.1:8080:80"
     depends_on:
       - backend
-
     networks:
       - app-network
 
-
 volumes:
   mysql_data:
-
+  keycloak_pgdata:
 
 networks:
   app-network:
