@@ -1,0 +1,179 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color-scheme: light;
+  --pf-v5-global--primary-color--100: #536dff;
+  --pf-v5-global--primary-color--200: #4059df;
+}
+
+body#keycloak-bg {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  color: #172033;
+  background: #f4f7fb;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.pf-v5-c-login {
+  display: grid;
+  min-height: 100vh;
+  min-height: 100svh;
+  place-items: center;
+}
+
+.pf-v5-c-login__container {
+  width: min(100%, 488px);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "header" "main";
+  padding: 24px;
+}
+
+#kc-header {
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+#kc-header-wrapper {
+  color: #536dff !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.pf-v5-c-login__main {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #dfe6f0;
+  border-radius: 16px;
+  box-shadow: 0 18px 50px rgb(31 48 78 / 10%);
+}
+
+.pf-v5-c-login__main-header {
+  padding: 40px 40px 0;
+  background: #fff;
+  border-top: 0;
+}
+
+#kc-page-title {
+  margin: 0;
+  color: #172033;
+  font-size: clamp(1.8rem, 5vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.pf-v5-c-login__main-body {
+  padding: 28px 40px 40px;
+  color: #5d687c;
+  background: #fff;
+}
+
+.pf-v5-c-form__group {
+  margin-bottom: 20px;
+}
+
+.pf-v5-c-form__label-text,
+.pf-v5-c-check__label {
+  color: #27344a;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.pf-v5-c-form-control {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.pf-v5-c-form-control::before,
+.pf-v5-c-form-control::after {
+  border: 0;
+  box-shadow: none;
+}
+
+.pf-v5-c-form-control:focus-within {
+  border-color: #536dff;
+  box-shadow: 0 0 0 3px rgb(83 109 255 / 16%);
+}
+
+.pf-v5-c-form-control input {
+  min-height: 44px;
+  padding: 12px 14px;
+  color: #172033;
+  background: transparent;
+  font: inherit;
+}
+
+.pf-v5-c-input-group > .pf-v5-c-input-group__item:first-child .pf-v5-c-form-control {
+  border-radius: 8px 0 0 8px;
+}
+
+.pf-v5-c-input-group .pf-v5-c-button.pf-m-control {
+  min-height: 44px;
+  color: #42506a;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-left: 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.pf-v5-c-button.pf-m-primary,
+#kc-login {
+  min-height: 46px;
+  padding: 12px 16px;
+  color: #fff;
+  background: #536dff;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+}
+
+.pf-v5-c-button.pf-m-primary:hover,
+#kc-login:hover {
+  background: #4059df;
+}
+
+.pf-v5-c-button.pf-m-primary::after,
+#kc-login::after {
+  border: 0;
+  border-radius: 8px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid rgb(83 109 255 / 35%);
+  outline-offset: 2px;
+}
+
+a,
+.pf-v5-c-button.pf-m-link {
+  color: #4059df;
+}
+
+.pf-v5-c-login__main-footer,
+.pf-v5-c-login__main-footer-band {
+  color: #5d687c;
+  background: #fff;
+}
+
+.pf-v5-c-alert.pf-m-danger,
+.pf-v5-c-helper-text__item-text.pf-m-error {
+  color: #b42343;
+}
+
+@media (max-width: 520px) {
+  .pf-v5-c-login__main-header {
+    padding: 28px 22px 0;
+  }
+
+  .pf-v5-c-login__main-body {
+    padding: 24px 22px 28px;
+  }
+}

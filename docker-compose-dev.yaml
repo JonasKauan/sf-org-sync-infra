@@ -1,5 +1,4 @@
 services:
-
   keycloak-db:
     image: postgres:17
     restart: unless-stopped
@@ -13,7 +12,9 @@ services:
       - keycloak_pgdata:/var/lib/postgresql/data
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      test:
+        - CMD-SHELL
+        - pg_isready -U keycloak -d keycloak
       interval: 10s
       timeout: 5s
       retries: 10
@@ -22,7 +23,7 @@ services:
     image: quay.io/keycloak/keycloak:26.8.1
     restart: unless-stopped
 
-    command: start
+    command: start-dev --spi-theme--static-max-age=-1 --spi-theme--cache-themes=false --spi-theme--cache-templates=false
 
     depends_on:
       keycloak-db:
@@ -37,10 +38,14 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
 
-      KC_HOSTNAME: "${PUBLIC_URL}/auth"
-      KC_HTTP_ENABLED: "true"
       KC_HTTP_RELATIVE_PATH: /auth
-      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME: http://localhost:8180/auth
+
+    ports:
+      - "127.0.0.1:8180:8080"
+
+    volumes:
+      - ./keycloak-theme/sf-org-manager:/opt/keycloak/themes/sf-org-manager:ro
 
   mysql:
     image: mysql:8.4
@@ -51,51 +56,11 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 
+    ports:
+      - "127.0.0.1:3306:3306"
+
     volumes:
       - mysql_data:/var/lib/mysql
-
-    networks:
-      - app-network
-
-  backend:
-    image: jonnaskauan/sf-org-hub-sync:latest
-    restart: unless-stopped
-
-    environment:
-      MY_SQL_URL: ${MY_SQL_URL}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      BOOTSTRAP_ENABLED: ${BOOTSTRAP_ENABLED}
-      APP_BOOTSTRAP_NAME: ${APP_BOOTSTRAP_NAME}
-      APP_BOOTSTRAP_USERNAME: ${APP_BOOTSTRAP_USERNAME}
-      APP_BOOTSTRAP_PASSWORD: ${APP_BOOTSTRAP_PASSWORD}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME}
-      SFDX_ENCRYPTION_KEY: ${SFDX_ENCRYPTION_KEY}
-      SERVER_PORT: ${SERVER_PORT}
-    depends_on:
-      - mysql
-
-    networks:
-      - app-network
-
-  frontend:
-    image: jonnaskauan/sf-org-manager:latest
-    restart: unless-stopped
-
-    ports:
-      - "8080:80"
-      - "443:443"
-      
-    volumes:
-      - 
-
-    depends_on:
-      - backend
-
-    networks:
-      - app-network
-
 
 volumes:
   keycloak_pgdata:
